@@ -9,15 +9,15 @@ pygame.init()
 
 #create screen 
 display = pygame.display.set_mode((800,600))
-background = pygame.image.load('background.png')
+background = pygame.image.load('images/background.png')
 
 pygame.display.set_caption("Mobile Robot Simulator")
-icon = pygame.image.load('icon.png')
+icon = pygame.image.load('images/icon.png')
 pygame.display.set_icon(icon)
 
 
 #robot
-robotimg = pygame.image.load('vacuum.png')
+robotimg = pygame.image.load('images/vacuum.png')
 robotx = random.uniform(0,735)
 roboty = random.uniform(0,535)
 
@@ -35,7 +35,7 @@ num_walls = 10
 
 for i in range(num_walls):
 
-    wallimg.append(pygame.image.load('wall.png'))
+    wallimg.append(pygame.image.load('images/wall.png'))
     wallx.append(random.uniform(0,800))
     wally.append(random.uniform(0,600))
 
