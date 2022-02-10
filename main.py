@@ -10,13 +10,13 @@ pygame.font.init()
 #images
 BACKGROUND = pygame.image.load("images/background.png")
 ROBOT = pygame.image.load("images/vacuum.png")
-WALL = pygame.image.load("images/wall.png")
-WALL_MASK = pygame.mask.from_surface(WALL)
+ICON = pygame.image.load('images/icon.png')
 
 #main sceen 
 WIDTH, HEIGHT = 800, 600
 SCREEN = pygame.display.set_mode((WIDTH, HEIGHT))
 pygame.display.set_caption("Mobile Robot Simulator")
+pygame.display.set_icon(ICON)
 pygame.rect.Rect
 FPS = 60
 MAIN_FONT = pygame.font.SysFont("comicsans", 44)
@@ -49,6 +49,11 @@ class RobotMove:
     def move_backward(self):
         self.vel = max(self.vel - self.acceleration, -self.max_vel/2)
         self.move()
+    
+    def stop(self):
+        self.vel = 0
+        self.angle = 0
+        self.move()
 
     def move(self):
         radians = math.radians(self.angle)
@@ -58,6 +63,19 @@ class RobotMove:
         self.y -= vertical
         self.x -= horizontal
         
+    
+    
+
+    
+
+ 
+
+class PlayRobot(RobotMove):
+    IMG = ROBOT
+    START_POS = (random.uniform(0,735),random.uniform(0,535))
+    
+    def collide(self):
+        #hit the wall
         if self.x <= 0:
             self.x = 0
         elif self.x >= 736:
@@ -67,28 +85,6 @@ class RobotMove:
             self.y = 0
         elif self.y >= 536:
             self.y = 536
-
-    def stop(self):
-        self.vel = max(0, 0)
-        self.move()
-    
-    def collide(self, mask, x=0, y=0):
-        robot_mask = pygame.mask.from_surface(self.img)
-        offset = (int(self.x - x), int(self.y - y))
-        poi = mask.overlap(robot_mask, offset)
-        return poi
-
-    def bounce(self):
-        self.vel = -self.vel
-        self.move()
-    
-
- 
-
-class PlayRobot(RobotMove):
-    IMG = ROBOT
-    START_POS = (random.uniform(0,735),random.uniform(0,535))
-
 
 
 def draw(screen,images, player_robot):
@@ -153,8 +149,8 @@ while run:
     if keys[pygame.K_x]:
         player_robot.stop()
 
-    if player_robot.collide(WALL_MASK) != None:
-        player_robot.bounce()
+    player_robot.collide()
+ 
 
 
 
