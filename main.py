@@ -110,7 +110,7 @@ def draw(screen,images, player_robot):
 
 run = True
 clock = pygame.time.Clock()
-images = [(BACKGROUND, (0, 0)), (WALL, (random.uniform(0,735),random.uniform(0,535)))]
+images = [(BACKGROUND, (0, 0)), (WALL, (342,142)),(WALL, (342,342))]
 player_robot = PlayRobot(4, 4)
 
 
