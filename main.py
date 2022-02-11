@@ -112,15 +112,19 @@ class PlayRobot(RobotMove):
     
     def collide(self):
         #hit the wall
+        self.boundaryX = WIDTH - 64
+        self.boundaryY = HEIGHT- 64
+        
         if self.x <= 0:
             self.x = 0
-        elif self.x >= 736:
-            self.x = 736
+        elif self.x >= self.boundaryX:
+            self.x = self.boundaryX
 
         if self.y <= 0:
             self.y = 0
-        elif self.y >= 536:
-            self.y = 536
+        elif self.y >= self.boundaryY :
+            self.y = self.boundaryY
+
 
 
 
