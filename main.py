@@ -1,7 +1,6 @@
 
 
 import pygame
-import math
 from utils import blit_rotate_center
 import random
 import numpy as np
@@ -18,10 +17,10 @@ ICON = pygame.image.load('images/icon.png')
 #main sceen 
 WIDTH, HEIGHT = 800, 600 #dimentions
 SCREEN = pygame.display.set_mode((WIDTH, HEIGHT))
-pygame.display.set_caption("Mobile Robot Simulator")
+#window setting
+pygame.display.set_caption("Mobile Robot Simulator") 
 pygame.display.set_icon(ICON)
 pygame.rect.Rect
-FPS = 60
 MAIN_FONT = pygame.font.SysFont("comicsans", 22)
 
 
@@ -45,8 +44,10 @@ class RobotMove:
         self.changeX = self.x + self.l
         self.changeY = self.y
 
+
     def move(self,keys,dt):
         
+        #setting the buttons
         if keys[0] == 1 :
             self.vl += self.speed 
         if keys[1] == 1 :
@@ -56,18 +57,23 @@ class RobotMove:
         if keys[3] == 1:
             self.vr -= self.speed
         if  keys[4] == 1:
+            self.vl == self.vr
             self.vr += self.speed
             self.vl += self.speed
         if  keys[5] == 1:
+            self.vl == self.vr
             self.vr -= self.speed
             self.vl -= self.speed
         if keys[6] == 1:
             self.vl = 0
             self.vr = 0
+            
 
           # check model
         if self.vr != 0 or self.vl != 0:
             if self.vl == self.vr:
+                self.x += ((self.vl+self.vr)/2) * np.cos(self.theta) * dt
+                self.y -= ((self.vl+self.vr)/2) * np.sin(self.theta) * dt
                 R = np.inf
                 w = 0   
             else:
@@ -87,11 +93,13 @@ class RobotMove:
                 self.y = rotation[1]
                 self.theta = rotation[2]
                 self.rotate(self.theta)
+    
 
     def rotate(self,angle):
         self.changeX = self.x + np.cos(angle) * self.l # Rotatation from the x-axis
         self.changeY = self.y + np.sin(angle) * self.l # Rotatation from the y-axis
-    
+
+    #draw and rotate the image
     def draw(self, win):
         blit_rotate_center(win, self.img, (self.x, self.y), self.theta)
     
@@ -99,8 +107,7 @@ class RobotMove:
 
 class PlayRobot(RobotMove):
     IMG = ROBOT
-    #start posision
-    START_POS = (random.uniform(0,735),random.uniform(0,535))
+    START_POS = (random.uniform(0,735),random.uniform(0,535)) #start at random potition
     trail_set =[]
     
     def collide(self):
@@ -119,13 +126,14 @@ class PlayRobot(RobotMove):
 
 def draw(screen,images, player_robot):
     
+    #display images on screen
     for img,pos in images:
         screen.blit(img,pos)
 
 
-    #display left, right velocity and theta
+    #display left, right velocity and theta on screen
     vel_text = MAIN_FONT.render(
-        f"Vl = {player_robot.vl} Vr = {player_robot.vr} theta = {int(math.degrees(player_robot.theta))}", 1, (255, 255, 255))
+        f"Vl = {player_robot.vl} Vr = {player_robot.vr} theta = {int(np.degrees(player_robot.theta))}", 1, (255, 255, 255))
     screen.blit(vel_text, (10, HEIGHT - vel_text.get_height() - 40))
     """
     #display distance sensors
@@ -133,10 +141,11 @@ def draw(screen,images, player_robot):
         f"Vel: {round(player_robot.sens, 1)}", 1, (255, 255, 255))
     screen.blit(sens_text, (10, HEIGHT - sens_text.get_height() - 10))
     """
-
+    #display robot on screen
     player_robot.draw(screen)
     pygame.display.update()
 
+#setting the enviroment
 class Envir:
         def __init__(self,dimention):
             #colors
@@ -148,9 +157,8 @@ class Envir:
             #window setting
             self.map = pygame.display.set_mode((self.width, self.height))
             #trail
-            self.trail_set=[]
-        
-        
+            self.trail_set=[]      
+        #line route
         def trail(self,pos):
             for i in range(0,len(self.trail_set)-1):
                 pygame.draw.line(self.map,self.white,(self.trail_set[i][0],self.trail_set[i][1]),
@@ -158,12 +166,12 @@ class Envir:
             if self.trail_set.__sizeof__()>10000:
                 self.trail_set.pop(0)
             self.trail_set.append(pos)
-
+        #y and x axis
         def robot_frame(self,pos,rotation):
             n = 80
             centerx,centery = pos
-            x_axis= (centerx +n*math.cos(-rotation),centery +n*math.sin(-rotation))
-            y_axis= (centerx +n*math.cos(-rotation+math.pi/2),centery +n*math.sin(-rotation+math.pi/2))
+            x_axis= (centerx +n*np.cos(-rotation),centery +n*np.sin(-rotation))
+            y_axis= (centerx +n*np.cos(-rotation+np.pi/2),centery +n*np.sin(-rotation+np.pi/2))
             pygame.draw.line(self.map,self.black,(centerx,centery),x_axis,3)
             pygame.draw.line(self.map,self.black,(centerx,centery),y_axis,3)
         
@@ -195,24 +203,25 @@ while run:
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             run = False
-
+    #timer
     clock.tick(dt)
-    keys = pygame.key.get_pressed()
     
+    #activate buttons
+    keys = pygame.key.get_pressed()
     key = [keys[pygame.K_w], keys[pygame.K_s], keys[pygame.K_o], keys[pygame.K_l], 
             keys[pygame.K_t], keys[pygame.K_g], keys[pygame.K_x]]
 
+    #run the robot
     activate = player_robot.move(key,dt)
     player_robot.collide()
 
    
-    
+    #visualize 
     enviroment.trail((player_robot.x,player_robot.y))
-    enviroment.robot_frame((player_robot.x,player_robot.y),player_robot.theta)
+    enviroment.robot_frame((player_robot.changeX,player_robot.changeY),player_robot.theta)
     enviroment.trail((player_robot.x,player_robot.y))
     player_robot.draw(enviroment.map)
     pygame.display.update()
     
-
+#exit the game
 pygame.quit()
-
