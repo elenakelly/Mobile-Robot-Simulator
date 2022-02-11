@@ -1,78 +1,107 @@
 
-import pygame
-import time
-import math
-from utils import blit_rotate_center,blit_text_center
-import random
 
+import pygame
+import math
+from utils import blit_rotate_center
+import random
+import numpy as np
+
+#initialisation of game
 pygame.font.init()
 
 #images
 BACKGROUND = pygame.image.load("images/background.png")
 ROBOT = pygame.image.load("images/vacuum.png")
+WALL = pygame.image.load("images/wall.png")
 ICON = pygame.image.load('images/icon.png')
 
 #main sceen 
-WIDTH, HEIGHT = 800, 600
+WIDTH, HEIGHT = 800, 600 #dimentions
 SCREEN = pygame.display.set_mode((WIDTH, HEIGHT))
 pygame.display.set_caption("Mobile Robot Simulator")
 pygame.display.set_icon(ICON)
 pygame.rect.Rect
 FPS = 60
-MAIN_FONT = pygame.font.SysFont("comicsans", 44)
+MAIN_FONT = pygame.font.SysFont("comicsans", 22)
 
 
 #Robot movement
 class RobotMove:
-    def __init__(self, max_vel, rotation_vel):
-        self.img = self.IMG
-        self.max_vel = max_vel
-        self.vel = 0
-        self.rotation_vel = rotation_vel
-        self.angle = 0
-        self.x, self.y = self.START_POS
-        self.acceleration = 0.1
+    def __init__(self):
+        self.trail_set = []
 
-    def rotate(self, left=False, right=False):
-        if left:
-            self.angle += self.rotation_vel
-        elif right:
-            self.angle -= self.rotation_vel
+        self.img = self.IMG #image
+        self.x = self.START_POS[0] #starting x
+        self.y = self.START_POS[1] #starting y
 
-    def draw(self, win):
-        blit_rotate_center(win, self.img, (self.x, self.y), self.angle)
-
-    def move_forward(self):
-        self.vel = min(self.vel + self.acceleration, self.max_vel)
-        self.move()
-    
-    def move_backward(self):
-        self.vel = max(self.vel - self.acceleration, -self.max_vel/2)
-        self.move()
-    
-    def stop(self):
-        self.vel = 0
-        self.angle = 0
-        self.move()
-
-    def move(self):
-        radians = math.radians(self.angle)
-        vertical = math.cos(radians) * self.vel
-        horizontal = math.sin(radians) * self.vel
-
-        self.y -= vertical
-        self.x -= horizontal
+        self.m2p = 3779.52 #meters to pixels
+        self.vl = 0 #left velocity
+        self.vr = 0 #right velocity
+        self.theta = 0
+        self.speed = 0.0001 
+        distance = 64
+        self.l = int(distance/2) #distance between the centers of the two wheels
         
-    
-    
+        self.changeX = self.x + self.l
+        self.changeY = self.y
 
-    
+    def move(self,keys,dt):
+        
+        if keys[0] == 1 :
+            self.vl += self.speed 
+        if keys[1] == 1 :
+            self.vl -= self.speed
+        if keys[2] == 1 :
+            self.vr += self.speed
+        if keys[3] == 1:
+            self.vr -= self.speed
+        if  keys[4] == 1:
+            self.vr += self.speed
+            self.vl += self.speed
+        if  keys[5] == 1:
+            self.vr -= self.speed
+            self.vl -= self.speed
+        if keys[6] == 1:
+            self.vl = 0
+            self.vr = 0
 
+          # check model
+        if self.vr != 0 or self.vl != 0:
+            if self.vl == self.vr:
+                R = np.inf
+                w = 0   
+            else:
+                R = self.l * (self.vl + self.vr) / (self.vr - self.vl)
+                w = (self.vr - self.vl) / (self.l*2)
+
+            # Computation of ICC
+                ICC = [self.x - R * np.sin(self.theta), self.y + R * np.cos(self.theta)]
+                rotation = np.transpose(np.matmul(
+                np.array([[np.cos(w * dt), -np.sin(w * dt), 0],
+                          [np.sin(w * dt), np.cos(w * dt), 0],
+                          [0, 0, 1]]),
+                np.transpose(np.array([self.x - ICC[0], self.y - ICC[1], self.theta]))) + np.array(
+                [ICC[0], ICC[1], w * dt])).transpose()   
+                
+                self.x = rotation[0]
+                self.y = rotation[1]
+                self.theta = rotation[2]
+                self.rotate(self.theta)
+
+    def rotate(self,angle):
+        self.changeX = self.x + np.cos(angle) * self.l # Rotatation from the x-axis
+        self.changeY = self.y + np.sin(angle) * self.l # Rotatation from the y-axis
+    
+    def draw(self, win):
+        blit_rotate_center(win, self.img, (self.x, self.y), self.theta)
+    
  
 
 class PlayRobot(RobotMove):
     IMG = ROBOT
+    #start posision
     START_POS = (random.uniform(0,735),random.uniform(0,535))
+    trail_set =[]
     
     def collide(self):
         #hit the wall
@@ -87,72 +116,103 @@ class PlayRobot(RobotMove):
             self.y = 536
 
 
+
 def draw(screen,images, player_robot):
     
     for img,pos in images:
         screen.blit(img,pos)
 
 
-
+    #display left, right velocity and theta
     vel_text = MAIN_FONT.render(
-        f"Vel: {round(player_robot.vel, 1)}", 1, (255, 255, 255))
-    screen.blit(vel_text, (10, HEIGHT - vel_text.get_height() - 10))
+        f"Vl = {player_robot.vl} Vr = {player_robot.vr} theta = {int(math.degrees(player_robot.theta))}", 1, (255, 255, 255))
+    screen.blit(vel_text, (10, HEIGHT - vel_text.get_height() - 40))
+    """
+    #display distance sensors
+    sens_text = MAIN_FONT.render(
+        f"Vel: {round(player_robot.sens, 1)}", 1, (255, 255, 255))
+    screen.blit(sens_text, (10, HEIGHT - sens_text.get_height() - 10))
+    """
 
     player_robot.draw(screen)
     pygame.display.update()
-  
 
+class Envir:
+        def __init__(self,dimention):
+            #colors
+            self.black = (0,0,0)
+            self.white = (255,255,255)
+            #map_dims
+            self.height= dimention[0]
+            self.width = dimention[1]
+            #window setting
+            self.map = pygame.display.set_mode((self.width, self.height))
+            #trail
+            self.trail_set=[]
+        
+        
+        def trail(self,pos):
+            for i in range(0,len(self.trail_set)-1):
+                pygame.draw.line(self.map,self.white,(self.trail_set[i][0],self.trail_set[i][1]),
+                                (self.trail_set[i+1][0],self.trail_set[i+1][1]))
+            if self.trail_set.__sizeof__()>10000:
+                self.trail_set.pop(0)
+            self.trail_set.append(pos)
 
-
-run = True
-clock = pygame.time.Clock()
-images = [(BACKGROUND, (0, 0)), (WALL, (342,142)),(WALL, (342,342))]
-player_robot = PlayRobot(4, 4)
-
-
-#visualization
-while run:
-    clock.tick(FPS)
-
-    draw(SCREEN,images, player_robot)
-
-
-    for event in pygame.event.get():
-        if event.type == pygame.QUIT:
-            run = False
-            
-
-    keys = pygame.key.get_pressed()
-    moved = False
-
-    #left wheel
-    if keys[pygame.K_w]:
-        player_robot.rotate(left=True)
-    if keys[pygame.K_s]:
-        player_robot.rotate(right=True)
-    
-    #right wheel
-    if keys[pygame.K_o]:
-        player_robot.rotate(right=True)
-    if keys[pygame.K_l]:
-        player_robot.rotate(left=True)
-    
-    #both wheels
-    if keys[pygame.K_t]:
-        moved = True
-        player_robot.move_forward()
-    if keys[pygame.K_g]:
-        moved = True
-        player_robot.move_backward()
-    
-    #stop
-    if keys[pygame.K_x]:
-        player_robot.stop()
-
-    player_robot.collide()
+        def robot_frame(self,pos,rotation):
+            n = 80
+            centerx,centery = pos
+            x_axis= (centerx +n*math.cos(-rotation),centery +n*math.sin(-rotation))
+            y_axis= (centerx +n*math.cos(-rotation+math.pi/2),centery +n*math.sin(-rotation+math.pi/2))
+            pygame.draw.line(self.map,self.black,(centerx,centery),x_axis,3)
+            pygame.draw.line(self.map,self.black,(centerx,centery),y_axis,3)
+        
  
 
 
+#running game or not
+run = True
+
+images = [(BACKGROUND, (0, 0)), (WALL, (342,142)),(WALL, (342,342))]
+#the robot 
+player_robot = PlayRobot()
+
+#enviroment prints
+enviroment = Envir([600,800])
+
+
+#dt
+dt = 1000
+clock = pygame.time.Clock()
+
+#simulation loop
+while run:
+
+    #visualize objects
+    draw(SCREEN,images, player_robot)
+
+    #activate quit button
+    for event in pygame.event.get():
+        if event.type == pygame.QUIT:
+            run = False
+
+    clock.tick(dt)
+    keys = pygame.key.get_pressed()
+    
+    key = [keys[pygame.K_w], keys[pygame.K_s], keys[pygame.K_o], keys[pygame.K_l], 
+            keys[pygame.K_t], keys[pygame.K_g], keys[pygame.K_x]]
+
+    activate = player_robot.move(key,dt)
+    player_robot.collide()
+
+   
+    
+    enviroment.trail((player_robot.x,player_robot.y))
+    enviroment.robot_frame((player_robot.x,player_robot.y),player_robot.theta)
+    enviroment.trail((player_robot.x,player_robot.y))
+    player_robot.draw(enviroment.map)
+    pygame.display.update()
+    
 
 pygame.quit()
-#test
+
