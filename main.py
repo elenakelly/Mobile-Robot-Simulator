@@ -1,7 +1,3 @@
-
-
-
-
 import pygame
 from utils import blit_rotate_center
 import random
@@ -128,21 +124,6 @@ class PlayRobot(RobotMove):
 
 
 
-def draw(screen,images, player_robot):
-    
-    #display images on screen
-    for img,pos in images:
-        screen.blit(img,pos)
-
-
-    #display left, right velocity and theta on screen
-    vel_text = MAIN_FONT.render(
-        f"Vl = {player_robot.vl} Vr = {player_robot.vr} theta = {int(np.degrees(player_robot.theta))}", 1, (255, 255, 255))
-    screen.blit(vel_text, (10, HEIGHT - vel_text.get_height() - 40))
-
-    #display robot on screen
-    player_robot.draw(screen)
-    pygame.display.update()
 
 #setting the enviroment
 class Envir:
@@ -173,6 +154,21 @@ class Envir:
             y_axis= (centerx +n*np.cos(-rotation+np.pi/2),centery +n*np.sin(-rotation+np.pi/2))
             pygame.draw.line(self.map,self.black,(centerx,centery),x_axis,3)
             pygame.draw.line(self.map,self.black,(centerx,centery),y_axis,3)
+            
+        def draw(self,screen,images, player_robot):
+
+            #display images on screen
+            for img,pos in images:
+                screen.blit(img,pos)
+            
+            #display left, right velocity and theta on screen
+            vel_text = MAIN_FONT.render(
+                f"Vl = {player_robot.vl} Vr = {player_robot.vr} theta = {int(np.degrees(player_robot.theta))}", 1, self.white)
+            screen.blit(vel_text, (10, HEIGHT - vel_text.get_height() - 40))
+
+            #display robot on screen
+            player_robot.draw(screen)
+            #pygame.display.update()
         
  
 
@@ -188,6 +184,7 @@ player_robot = PlayRobot()
 enviroment = Envir([600,800])
 
 
+
 #dt
 dt = 1000 
 clock = pygame.time.Clock()
@@ -195,9 +192,6 @@ FPS = 60
 
 #simulation loop
 while run:
-
-    #visualize objects
-    draw(SCREEN,images, player_robot)
 
     #activate quit button
     for event in pygame.event.get():
@@ -217,7 +211,8 @@ while run:
     player_robot.collide()
 
    
-    #visualize 
+#visualize objects
+    enviroment.draw(SCREEN,images,player_robot)
     enviroment.robot_frame((player_robot.x,player_robot.y),player_robot.theta)
     enviroment.trail((player_robot.x,player_robot.y))
     player_robot.draw(enviroment.map)
@@ -225,3 +220,4 @@ while run:
     
 #exit the game
 pygame.quit()
+
