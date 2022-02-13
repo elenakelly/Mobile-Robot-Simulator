@@ -113,8 +113,8 @@ class RobotMove:
 
 class PlayRobot(RobotMove):
     IMG = ROBOT
-    START_POS = (random.uniform(0, 735), random.uniform(
-        0, 535))  # start at random potition
+    START_POS = (random.uniform(40, 735), random.uniform(
+        40, 535))  # start at random potition
     trail_set = []
 
     def collide(self):
