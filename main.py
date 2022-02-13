@@ -134,7 +134,7 @@ class PlayRobot(RobotMove):
 # Raycasting
 
 
-def cast_rays(screen):
+def cast_rays(screen, walls):
 
     all_sensors = []
 
@@ -146,13 +146,6 @@ def cast_rays(screen):
         all_sensors.append((sensor_x, sensor_y, temp_angle, temp_angle, i))
         temp_angle += STEP_ANGLE
 
-    walls = []
-
-    walls.append(rectWalT)
-    walls.append(rectWalB)
-    walls.append(rectWalL)
-    walls.append(rectWalR)
-
     for sensor in all_sensors:
 
         clip = None
@@ -163,10 +156,10 @@ def cast_rays(screen):
 
             ray = ((sensor_x, sensor_y), (target_x, target_y))
 
-            clipped_lineR = rectWalR.clipline(ray)
-            clipped_lineL = rectWalL.clipline(ray)
-            clipped_lineT = rectWalT.clipline(ray)
-            clipped_lineB = rectWalB.clipline(ray)
+            clipped_lineL = walls[0].clipline(ray)
+            clipped_lineR = walls[1].clipline(ray)
+            clipped_lineT = walls[2].clipline(ray)
+            clipped_lineB = walls[3].clipline(ray)
 
             if clipped_lineR:
                 clip = clipped_lineR[0]
@@ -243,6 +236,16 @@ class Envir:
         player_robot.draw(screen)
         # pygame.display.update()
 
+    def setWalls():
+        wall_pixel_offset = 42
+        rectWallL = pygame.Rect(0, 0, wall_pixel_offset, HEIGHT)
+        rectWallR = pygame.Rect(WIDTH-wall_pixel_offset, 0,
+                                wall_pixel_offset, HEIGHT)
+        rectWallT = pygame.Rect(0,  0, WIDTH, wall_pixel_offset)
+        rectWallB = pygame.Rect(0, HEIGHT-wall_pixel_offset,
+                                WIDTH, wall_pixel_offset)
+        return [rectWallL, rectWallR, rectWallT, rectWallB]
+
 
 # running game or not
 run = True
@@ -253,6 +256,7 @@ player_robot = PlayRobot()
 
 # enviroment prints
 enviroment = Envir([600, 800])
+walls = Envir.setWalls()
 
 
 # dt
@@ -287,23 +291,7 @@ while run:
         (player_robot.x, player_robot.y), player_robot.theta)
     enviroment.trail((player_robot.x, player_robot.y))
     player_robot.draw(enviroment.map)
-
-    # SENSORS 3
-    # Raycast
-    if(scanner_cooldown == 1):
-        cast_rays(SCREEN)
-        scanner_cooldown = 0
-    scanner_cooldown += 1
-
-    # SENSORS 5
-
-    wall_pixel_offset = 42
-    rectWalL = pygame.Rect(0, 0, wall_pixel_offset, HEIGHT)
-    rectWalT = pygame.Rect(0,  0, WIDTH, wall_pixel_offset)
-    rectWalR = pygame.Rect(WIDTH-wall_pixel_offset, 0,
-                           wall_pixel_offset, HEIGHT)
-    rectWalB = pygame.Rect(0, HEIGHT-wall_pixel_offset,
-                           WIDTH, wall_pixel_offset)
+    cast_rays(SCREEN, walls)
 
     # ---
 
