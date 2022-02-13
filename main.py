@@ -1,5 +1,7 @@
 
 
+
+
 import pygame
 from utils import blit_rotate_center
 import random
@@ -34,10 +36,10 @@ class RobotMove:
         self.y = self.START_POS[1] #starting y
 
         self.m2p = 3779.52 #meters to pixels
-        self.vl = 0 #left velocity
+        self.vl = 0  #left velocity
         self.vr = 0 #right velocity
         self.theta = 0
-        self.speed = 0.0001 
+        self.speed = 0.001
         distance = 64
         self.l = int(distance/2) #distance between the centers of the two wheels
         
@@ -111,10 +113,9 @@ class PlayRobot(RobotMove):
     trail_set =[]
     
     def collide(self):
-        #hit the wall
         self.boundaryX = WIDTH - 64
         self.boundaryY = HEIGHT- 64
-        
+        #hit the wall
         if self.x <= 0:
             self.x = 0
         elif self.x >= self.boundaryX:
@@ -124,7 +125,6 @@ class PlayRobot(RobotMove):
             self.y = 0
         elif self.y >= self.boundaryY :
             self.y = self.boundaryY
-
 
 
 
@@ -139,12 +139,7 @@ def draw(screen,images, player_robot):
     vel_text = MAIN_FONT.render(
         f"Vl = {player_robot.vl} Vr = {player_robot.vr} theta = {int(np.degrees(player_robot.theta))}", 1, (255, 255, 255))
     screen.blit(vel_text, (10, HEIGHT - vel_text.get_height() - 40))
-    """
-    #display distance sensors
-    sens_text = MAIN_FONT.render(
-        f"Vel: {round(player_robot.sens, 1)}", 1, (255, 255, 255))
-    screen.blit(sens_text, (10, HEIGHT - sens_text.get_height() - 10))
-    """
+
     #display robot on screen
     player_robot.draw(screen)
     pygame.display.update()
@@ -194,8 +189,9 @@ enviroment = Envir([600,800])
 
 
 #dt
-dt = 1000
+dt = 1000 
 clock = pygame.time.Clock()
+FPS = 60
 
 #simulation loop
 while run:
@@ -207,8 +203,9 @@ while run:
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             run = False
+
     #timer
-    clock.tick(dt)
+    clock.tick(FPS)
     
     #activate buttons
     keys = pygame.key.get_pressed()
@@ -221,8 +218,7 @@ while run:
 
    
     #visualize 
-    enviroment.trail((player_robot.x,player_robot.y))
-    enviroment.robot_frame((player_robot.changeX,player_robot.changeY),player_robot.theta)
+    enviroment.robot_frame((player_robot.x,player_robot.y),player_robot.theta)
     enviroment.trail((player_robot.x,player_robot.y))
     player_robot.draw(enviroment.map)
     pygame.display.update()
