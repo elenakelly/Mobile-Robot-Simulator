@@ -163,26 +163,30 @@ def cast_rays(screen, walls):
 
             if clipped_lineR:
                 clip = clipped_lineR[0]
-
             if clipped_lineL:
                 clip = clipped_lineL[0]
-
             if clipped_lineT:
                 clip = clipped_lineT[0]
-
             if clipped_lineB:
                 clip = clipped_lineB[0]
 
+        sensor_placement_offset = 8
+        sensor_placement_radius_depth = 64
+        sensor_placement_x = sensor[0] - math.sin(
+            sensor[2]) * sensor_placement_radius_depth - sensor_placement_offset
+        sensor_placement_y = sensor[1] + math.cos(
+            sensor[3]) * sensor_placement_radius_depth - sensor_placement_offset
+        collision_offset = 29
         if clip:
-            sensor_text = SENSORS_FONT.render(
-                f"{int(math.sqrt((clip[1]-sensor_y)**2 + (clip[0]-sensor_x)**2))-29}", 1, (255, 255, 255))
-            screen.blit(
-                sensor_text, (sensor[0] - math.sin(sensor[2]) * 64 - 8, sensor[1] + math.cos(sensor[3]) * 64 - 8))
+            sensor_distance = int(
+                math.sqrt((clip[1]-sensor_y)**2 + (clip[0]-sensor_x)**2))-collision_offset
         else:
-            sensor_text = SENSORS_FONT.render(
-                f"200", 1, (255, 255, 255))
-            screen.blit(
-                sensor_text, (sensor[0] - math.sin(sensor[2]) * 64 - 8, sensor[1] + math.cos(sensor[3]) * 64 - 8))
+            sensor_distance = 200
+
+        sensor_text = SENSORS_FONT.render(
+            f"{sensor_distance}", 1, (255, 255, 255))
+        screen.blit(
+            sensor_text, (sensor_placement_x, sensor_placement_y))
 
     # ------------
 
