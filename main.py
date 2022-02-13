@@ -8,7 +8,7 @@ import math
 pygame.font.init()
 
 # images
-BACKGROUND = pygame.image.load("images/background.png")
+BACKGROUND = pygame.image.load("images/background2.png")
 ROBOT = pygame.image.load("images/vacuum.png")
 WALL = pygame.image.load("images/wall.png")
 ICON = pygame.image.load('images/icon.png')
