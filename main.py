@@ -121,15 +121,15 @@ class PlayRobot(RobotMove):
         self.boundaryX = WIDTH - 64
         self.boundaryY = HEIGHT - 64
         # hit the wall
-        if self.x <= 0:
-            self.x = 0
-        elif self.x >= self.boundaryX:
-            self.x = self.boundaryX
+        if self.x <= 38:
+            self.x = 38
+        elif self.x >= self.boundaryX - 39:
+            self.x = self.boundaryX - 39
 
-        if self.y <= 0:
-            self.y = 0
-        elif self.y >= self.boundaryY:
-            self.y = self.boundaryY
+        if self.y <= 38:
+            self.y = 38
+        elif self.y >= self.boundaryY - 39:
+            self.y = self.boundaryY - 39
 
 # Raycasting
 
