@@ -3,6 +3,9 @@ from utils import blit_rotate_center
 import random
 import numpy as np
 import math
+import os
+
+os.chdir("C://Users/nickd/PycharmProjects/Mobile-Robot-Simulator")
 
 # initialisation of game
 pygame.font.init()
@@ -10,7 +13,7 @@ pygame.font.init()
 # images
 BACKGROUND = pygame.image.load("images/background2.png")
 ROBOT = pygame.image.load("images/vacuum.png")
-WALL = pygame.image.load("images/wall.png")
+#WALL = pygame.image.load("images/wall.png")
 ICON = pygame.image.load('images/icon.png')
 
 # main sceen
@@ -50,6 +53,8 @@ class RobotMove:
 
         self.changeX = self.x + self.l
         self.changeY = self.y
+
+        self.rect = pygame.Rect(self.x, self.y, 60, 60)
 
     def move(self, keys, dt):
 
@@ -95,10 +100,39 @@ class RobotMove:
                     np.transpose(np.array([self.x - ICC[0], self.y - ICC[1], self.theta]))) + np.array(
                     [ICC[0], ICC[1], w * dt])).transpose()
 
-                self.x = rotation[0]
-                self.y = rotation[1]
+                u_col, b_col, r_col, l_col = self.is_colliding()
+                print(u_col or b_col)
+                if not (l_col or r_col):
+                    self.x = rotation[0]
+                if not (u_col or b_col):
+                    self.y = rotation[1]
                 self.theta = rotation[2]
                 self.rotate(self.theta)
+
+    def upd_rect(self):
+        self.rect.x = self.x
+        self.rect.y = self.y
+
+    def is_colliding(self):
+        uper_col = False
+        bottom_col = False
+        right_col = False
+        left_col = False
+        for wall in wall_list:
+            if self.rect.colliderect(wall.rect):
+                if abs(wall.rect.top - self.rect.bottom) < 10:
+                    #print("upper col")
+                    uper_col = True
+                if abs(wall.rect.bottom - self.rect.top) < 10:
+                    #print("bottom col")
+                    bottom_col = True
+                if abs(wall.rect.right - self.rect.left) < 10:
+                    #print("right col")
+                    right_col = True
+                if abs(wall.rect.left - self.rect.right) < 10:
+                    #print("left col")
+                    left_col = True
+        return uper_col,bottom_col, right_col, left_col
 
     def rotate(self, angle):
         # Rotatation from the x-axis
@@ -250,13 +284,21 @@ class Envir:
                                 WIDTH, wall_pixel_offset)
         return [rectWallL, rectWallR, rectWallT, rectWallB]
 
+class Wall():
+    def __init__(self, x, y, width, height):
+        self.rect = pygame.Rect(x, y, width, height)
+    def draw(self, screen):
+        pygame.draw.rect(screen, (0, 51, 0), self.rect)
+
 
 # running game or not
 run = True
 
-images = [(BACKGROUND, (0, 0)), (WALL, (342, 142)), (WALL, (342, 342))]
+images = [(BACKGROUND, (0, 0))]
 # the robot
 player_robot = PlayRobot()
+#walls
+wall_list = [Wall(100,200,300,10),Wall(100,200,10,300), Wall(400,10,10,300)]
 
 # enviroment prints
 enviroment = Envir([600, 800])
@@ -289,12 +331,16 @@ while run:
     activate = player_robot.move(key, dt)
     player_robot.collide()
 
-# visualize objects
+    # visualize objects
+
     enviroment.draw(SCREEN, images, player_robot)
+    for wall in wall_list:
+        wall.draw(SCREEN)
     enviroment.robot_frame(
         (player_robot.x, player_robot.y), player_robot.theta)
     enviroment.trail((player_robot.x, player_robot.y))
     player_robot.draw(enviroment.map)
+    player_robot.upd_rect()
     cast_rays(SCREEN, walls)
 
     # ---
