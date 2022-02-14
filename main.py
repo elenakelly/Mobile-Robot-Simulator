@@ -5,7 +5,7 @@ import numpy as np
 import math
 import os
 
-#os.chdir("C://Users/nickd/PycharmProjects/Mobile-Robot-Simulator")
+# os.chdir("C://Users/nickd/PycharmProjects/Mobile-Robot-Simulator")
 
 # initialisation of game
 pygame.font.init()
@@ -14,6 +14,7 @@ pygame.font.init()
 BACKGROUND = pygame.image.load("images/background2.png")
 ROBOT = pygame.image.load("images/vacuum.png")
 #WALL = pygame.image.load("images/wall.png")
+WALLTT = pygame.image.load("images/wallTT.png")
 ICON = pygame.image.load('images/icon.png')
 
 # main sceen
@@ -132,7 +133,7 @@ class RobotMove:
                 if abs(wall.rect.left - self.rect.right) < 10:
                     #print("left col")
                     left_col = True
-        return uper_col,bottom_col, right_col, left_col
+        return uper_col, bottom_col, right_col, left_col
 
     def rotate(self, angle):
         # Rotatation from the x-axis
@@ -182,7 +183,7 @@ def cast_rays(screen, walls):
 
     for sensor in all_sensors:
 
-        clip = None
+        clipped_line = None
 
         for depth in range(200):
             target_x = sensor[0] - math.sin(sensor[2]) * depth
@@ -190,19 +191,10 @@ def cast_rays(screen, walls):
 
             ray = ((sensor_x, sensor_y), (target_x, target_y))
 
-            clipped_lineL = walls[0].clipline(ray)
-            clipped_lineR = walls[1].clipline(ray)
-            clipped_lineT = walls[2].clipline(ray)
-            clipped_lineB = walls[3].clipline(ray)
-
-            if clipped_lineR:
-                clip = clipped_lineR[0]
-            if clipped_lineL:
-                clip = clipped_lineL[0]
-            if clipped_lineT:
-                clip = clipped_lineT[0]
-            if clipped_lineB:
-                clip = clipped_lineB[0]
+            for i in range(len(walls)):
+                clipped_line = walls[i].clipline(ray)
+                if clipped_line:
+                    break
 
         sensor_placement_offset = 8
         sensor_placement_radius_depth = 64
@@ -211,9 +203,9 @@ def cast_rays(screen, walls):
         sensor_placement_y = sensor[1] + math.cos(
             sensor[3]) * sensor_placement_radius_depth - sensor_placement_offset
         collision_offset = 29
-        if clip:
+        if clipped_line:
             sensor_distance = int(
-                math.sqrt((clip[1]-sensor_y)**2 + (clip[0]-sensor_x)**2))-collision_offset
+                math.sqrt((clipped_line[0][1]-sensor_y)**2 + (clipped_line[0][0]-sensor_x)**2))-collision_offset
         else:
             sensor_distance = 200
 
@@ -225,7 +217,20 @@ def cast_rays(screen, walls):
     # ------------
 
 
-# setting the enviroment
+def wall_collision(robot, screen, WallRect):
+
+    offset_x = WallRect.x - robot.x
+    offset_y = WallRect.y - robot.y
+    robot_mask = pygame.mask.from_surface(robot.img)
+    wall_mask = pygame.mask.from_surface(WALLTT)
+    if robot_mask.overlap(wall_mask, (offset_x, offset_y)):
+        col_text = MAIN_FONT.render(
+            f"COLLISION", 1, (255, 255, 255))
+        screen.blit(col_text, (530, 140))
+        pygame.display.flip()
+
+ # setting the enviroment
+
 
 class Envir:
     def __init__(self, dimention):
@@ -284,9 +289,11 @@ class Envir:
                                 WIDTH, wall_pixel_offset)
         return [rectWallL, rectWallR, rectWallT, rectWallB]
 
+
 class Wall():
     def __init__(self, x, y, width, height):
         self.rect = pygame.Rect(x, y, width, height)
+
     def draw(self, screen):
         pygame.draw.rect(screen, (0, 51, 0), self.rect)
 
@@ -294,16 +301,23 @@ class Wall():
 # running game or not
 run = True
 
-images = [(BACKGROUND, (0, 0))]
+images = [(BACKGROUND, (0, 0)), (WALLTT, (542, 142))]
 # the robot
 player_robot = PlayRobot()
-#walls
-wall_list = [Wall(100,200,300,10),Wall(100,200,10,300), Wall(400,10,10,300)]
+# walls
+wall_list = [Wall(100, 200, 300, 10), Wall(
+    100, 200, 10, 300), Wall(400, 10, 10, 300)]
 
 # enviroment prints
 enviroment = Envir([600, 800])
 walls = Envir.setWalls()
 
+for wall in wall_list:
+    walls.append(wall.rect)
+
+# Test Wall
+WallRect = pygame.Rect(542, 142, WALLTT.get_width(), WALLTT.get_height())
+# ----
 
 # dt
 dt = 50
@@ -332,6 +346,8 @@ while run:
     player_robot.collide()
 
     # visualize objects
+
+    # wall_collision(player_robot, SCREEN, WallRect)
 
     enviroment.draw(SCREEN, images, player_robot)
     for wall in wall_list:
