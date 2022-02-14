@@ -5,7 +5,7 @@ import numpy as np
 import math
 import os
 
-os.chdir("C://Users/nickd/PycharmProjects/Mobile-Robot-Simulator")
+#os.chdir("C://Users/nickd/PycharmProjects/Mobile-Robot-Simulator")
 
 # initialisation of game
 pygame.font.init()
