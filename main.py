@@ -11,7 +11,7 @@ import os
 pygame.font.init()
 
 # images
-BACKGROUND = pygame.image.load("images/background2.png")
+BACKGROUND = pygame.image.load("images/background.png")
 ROBOT = pygame.image.load("images/vacuum.png")
 WALLTT = pygame.image.load("images/wallTT.png")
 ICON = pygame.image.load('images/icon.png')
@@ -115,7 +115,7 @@ class RobotMove:
                 if not (u_col or b_col):
                     self.y = rotation[1]
                 self.theta = rotation[2]
-                self.rotate(self.theta)
+
         
         self.rotated =pygame.transform.rotozoom(self.img,math.degrees(self.theta),1)
         self.rect = self.rotated.get_rect(center = (self.x,self.y))
@@ -145,11 +145,6 @@ class RobotMove:
                     left_col = True
         return uper_col, bottom_col, right_col, left_col
 
-    def rotate(self, angle):
-        # Rotatation from the x-axis
-        self.changeX = self.x + np.cos(angle) * self.l
-        # Rotatation from the y-axis
-        self.changeY = self.y + np.sin(angle) * self.l
 
 
 
@@ -225,7 +220,7 @@ def cast_rays(screen, walls):
 
     # ------------
 
-
+'''
 def wall_collision(robot, screen, WallRect):
 
     offset_x = WallRect.x - robot.x
@@ -240,6 +235,8 @@ def wall_collision(robot, screen, WallRect):
         screen.blit(col_text, (530, 140))
         pygame.display.flip()
     return col_mask, offset_x, offset_y
+
+'''
 
 # setting the enviroment
 
