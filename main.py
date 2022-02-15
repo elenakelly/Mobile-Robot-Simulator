@@ -55,6 +55,14 @@ class RobotMove:
         self.changeY = self.y
 
         self.rect = pygame.Rect(self.x, self.y, 60, 60)
+        self.rotated = self.img
+        self.rect = self.rotated.get_rect(center =(self.x,self.y))
+    
+
+    # draw and rotate the image
+    def draw(self, win):
+        blit_rotate_center(win, self.img, (self.x, self.y), math.degrees(self.theta))
+
 
     def move(self, keys, dt):
 
@@ -91,7 +99,7 @@ class RobotMove:
                 w = (self.vr - self.vl) / (self.l*2)
 
             # Computation of ICC
-                ICC = [self.x - R * np.sin(self.theta),
+                ICC = [self.x - R * np.sin(-self.theta),
                        self.y + R * np.cos(self.theta)]
                 rotation = np.transpose(np.matmul(
                     np.array([[np.cos(w * dt), -np.sin(w * dt), 0],
@@ -108,6 +116,9 @@ class RobotMove:
                     self.y = rotation[1]
                 self.theta = rotation[2]
                 self.rotate(self.theta)
+        
+        self.rotated =pygame.transform.rotozoom(self.img,math.degrees(self.theta),1)
+        self.rect = self.rotated.get_rect(center = (self.x,self.y))
 
     def upd_rect(self):
         self.rect.x = self.x
@@ -140,9 +151,7 @@ class RobotMove:
         # Rotatation from the y-axis
         self.changeY = self.y + np.sin(angle) * self.l
 
-    # draw and rotate the image
-    def draw(self, win):
-        blit_rotate_center(win, self.img, (self.x, self.y), self.theta)
+
 
 
 class PlayRobot(RobotMove):
@@ -222,7 +231,7 @@ def wall_collision(robot, screen, WallRect):
     offset_x = WallRect.x - robot.x
     offset_y = WallRect.y - robot.y
     robot_mask = pygame.mask.from_surface(robot.img)
-    wall_mask = pygame.mask.from_surface(WALL)
+    wall_mask = pygame.mask.from_surface(WALLTT)
     col_mask = robot_mask.overlap(wall_mask, (offset_x, offset_y))
     if col_mask:
         print("COLLISION")
