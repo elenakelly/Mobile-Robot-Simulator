@@ -13,7 +13,6 @@ pygame.font.init()
 # images
 BACKGROUND = pygame.image.load("images/background2.png")
 ROBOT = pygame.image.load("images/vacuum.png")
-#WALL = pygame.image.load("images/wall.png")
 WALLTT = pygame.image.load("images/wallTT.png")
 ICON = pygame.image.load('images/icon.png')
 
@@ -122,16 +121,16 @@ class RobotMove:
         for wall in wall_list:
             if self.rect.colliderect(wall.rect):
                 if abs(wall.rect.top - self.rect.bottom) < 10:
-                    #print("upper col")
+                    # print("upper col")
                     uper_col = True
                 if abs(wall.rect.bottom - self.rect.top) < 10:
-                    #print("bottom col")
+                    # print("bottom col")
                     bottom_col = True
                 if abs(wall.rect.right - self.rect.left) < 10:
-                    #print("right col")
+                    # print("right col")
                     right_col = True
                 if abs(wall.rect.left - self.rect.right) < 10:
-                    #print("left col")
+                    # print("left col")
                     left_col = True
         return uper_col, bottom_col, right_col, left_col
 
@@ -165,6 +164,7 @@ class PlayRobot(RobotMove):
             self.y = 38
         elif self.y >= self.boundaryY - 39:
             self.y = self.boundaryY - 39
+
 
 # Raycasting
 
@@ -222,14 +222,17 @@ def wall_collision(robot, screen, WallRect):
     offset_x = WallRect.x - robot.x
     offset_y = WallRect.y - robot.y
     robot_mask = pygame.mask.from_surface(robot.img)
-    wall_mask = pygame.mask.from_surface(WALLTT)
-    if robot_mask.overlap(wall_mask, (offset_x, offset_y)):
+    wall_mask = pygame.mask.from_surface(WALL)
+    col_mask = robot_mask.overlap(wall_mask, (offset_x, offset_y))
+    if col_mask:
+        print("COLLISION")
         col_text = MAIN_FONT.render(
             f"COLLISION", 1, (255, 255, 255))
         screen.blit(col_text, (530, 140))
         pygame.display.flip()
+    return col_mask, offset_x, offset_y
 
- # setting the enviroment
+# setting the enviroment
 
 
 class Envir:
@@ -272,7 +275,7 @@ class Envir:
 
         # display left, right velocity and theta on screen
         vel_text = MAIN_FONT.render(
-            f"Vl = {player_robot.vl} Vr = {player_robot.vr} theta = {int(np.degrees(player_robot.theta))}", 1, self.white)
+            f"Vl = {round(player_robot.vl,2)} Vr = {round(player_robot.vr,2)} theta = {int(np.degrees(player_robot.theta))}", 1, self.white)
         screen.blit(vel_text, (10, HEIGHT - vel_text.get_height() - 40))
 
         # display robot on screen
@@ -301,7 +304,7 @@ class Wall():
 # running game or not
 run = True
 
-images = [(BACKGROUND, (0, 0)), (WALLTT, (542, 142))]
+images = [(BACKGROUND, (0, 0))]
 # the robot
 player_robot = PlayRobot()
 # walls
@@ -316,14 +319,14 @@ for wall in wall_list:
     walls.append(wall.rect)
 
 # Test Wall
-WallRect = pygame.Rect(542, 142, WALLTT.get_width(), WALLTT.get_height())
+# WallTTRect = pygame.Rect(542, 142, WALLTT.get_width(), WALLTT.get_height())
+# walls.append(WallTTRect)
 # ----
 
 # dt
 dt = 50
 clock = pygame.time.Clock()
 FPS = 60
-scanner_cooldown = 0
 
 # simulation loop
 while run:
