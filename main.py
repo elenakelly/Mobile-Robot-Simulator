@@ -1,13 +1,14 @@
-from msilib.schema import Environment
-from this import d
 import pygame
-from utils import blit_rotate_center
 import numpy as np
 import math
 from numpy import ones, vstack
 from numpy.linalg import lstsq
 
-# os.chdir("C://Users/nickd/PycharmProjects/Mobile-Robot-Simulator")
+def blit_rotate_center(win, image, top_left, angle):
+    rotated_image = pygame.transform.rotozoom(image, angle,1)
+    new_rect = rotated_image.get_rect(
+        center=image.get_rect(topleft=top_left).center)
+    win.blit(rotated_image, new_rect.topleft)
 
 # initialisation of game
 pygame.font.init()
