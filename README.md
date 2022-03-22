@@ -8,6 +8,7 @@ In the Screen:
 
 ## Motion Model
 The motion model is a wheeled robot with differential drive<br />
+<img width="554" alt="Screenshot 2022-03-22 at 5 54 03 PM" src="https://user-images.githubusercontent.com/59971317/159538001-52a6ea7f-fa25-44dc-8ae0-9737b2585b90.png">
 
 
 Control speed of motors of left and right wheel with keyboard<br />
